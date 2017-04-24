@@ -2,7 +2,7 @@
 
 import numpy as np
 
-class SVDpp():
+class SVDpp:
     def __init__(self, n_factors=20, n_epochs=20, lr=0.007, reg=.002):
         self.n_factors = n_factors
         self.n_epochs = n_epochs

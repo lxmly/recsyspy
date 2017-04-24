@@ -7,13 +7,13 @@ from scipy.sparse import csc_matrix
 import numpy as np
 from svdpp import SVDpp
 from slop_one import SlopOne
+from collections import defaultdict
 
 class DataBuilder:
     def __init__(self, file_name):
         self.file_name = file_name
 
     def read_ratings(self, file_name):
-        path = os.path.expanduser(file_name)
         with open(os.path.expanduser(file_name)) as f:
             raw_ratings = [self.parse_line(line) for line in itertools.islice(f, 0, None)]
         return raw_ratings
@@ -36,6 +36,8 @@ class DataBuilder:
             if fold_i < left:
                 stop += 1
             yield seq[:start] + start[stop:], seq[start:stop]
+
+
     def build_trainset(self):
         raw_trainset = self.read_ratings(self.file_name)
         uid_dict = {}
@@ -63,22 +65,64 @@ class DataBuilder:
             row.append(uid)
             col.append(iid)
             data.append(r)
-        return DataSet(uid_dict, iid_dict, csc_matrix((data, (row, col))))
+        sparse_matrix = csc_matrix((data, (row, col)))
+        print(sparse_matrix.shape)
+        row_index = np.arange(sparse_matrix.shape[0])
+        np.random.shuffle(row_index)
+        stop = int(row_index.size / 5)
+        train, test = row_index[stop:], row_index[0:stop]
+        train_dataset, test_dataset =  sparse_matrix[train, :], sparse_matrix[test, :]
+        return Matrix(train_dataset), Matrix(test_dataset)
 
-class DataSet:
-    def __init__(self, matrix, uid_dict, iid_dict):
-        self.matrix = matrix
-        self.uid_dict = uid_dict
-        self.iid_dict = iid_dict
+class Matrix:
 
+    def __init__(self, sparse_matrix):
+        self.matrix = sparse_matrix.tocoo()
+        self._global_mean = None
+
+    def get_item(self, i):
+        return self.matrix.getcol(i).tocoo()
+
+    def get_user(self, u):
+        rating = self.matrix.getrow(u).tocoo()
+        return rating.col, rating.data
+
+    def get_users(self):
+        for u in self.get_uids():
+            yield u, self.get_user(u)
+
+    def get_users_mean(self):
+        users_mean = {}
+        for u in self.get_uids():
+            users_mean[u] = np.mean(self.get_user(u)[1])
+        return users_mean
+
+    def all_ratings(self):
+        return itertools.izip(self.matrix.row, self.matrix.col, self.matrix.data)
+
+    def shape(self):
+        return self.matrix.shape
+
+    def get_uids(self):
+        return np.unique(self.matrix.row)
+
+    def get_iids(self):
+        return np.unique(self.matrix.col)
+
+    @property
+    def global_mean(self):
+        if self._global_mean is None:
+            self._global_mean = np.sum(self.matrix.data) / self.matrix.nnz
+        return self._global_mean
 
 if __name__ == '__main__':
-    file_name = 'E:/work/data/ml-100k/u1.test'
+    file_name = '/Users/fanruiqiang/work/data/ml-100k/u.data'
     data_builder = DataBuilder(file_name)
-    uid_dict, iid_dict, coo_matrix = data_builder.build_trainset()
-    slopOne = SlopOne()
-    slopOne.train(coo_matrix, uid_dict, iid_dict)
-    print(slopOne.estimate(0,7))
+    train_dataset, test_dataset = data_builder.build_trainset()
+    print(train_dataset.global_mean)
+    #slopOne = SlopOne()
+    #slopOne.train(coo_matrix, uid_dict, iid_dict)
+    #print(slopOne.estimate(0,7))
     #row = np.array([0, 3, 1, 0])
     #col = np.array([0, 3, 1, 2])
     #data = np.array([4, 5, 7, 9])

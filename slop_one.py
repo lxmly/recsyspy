@@ -4,12 +4,12 @@ import numpy as np
 from scipy.sparse import csc_matrix
 from scipy.sparse import lil_matrix
 import itertools
-from sklearn.metrics import mean_squared_error
 
-class SlopOne():
+
+class SlopOne:
     def __init__(self):
         pass
-    def train(self, train_dataset, uid_dict, iid_dict):
+    def train(self, train_dataset):
         item_num = train_dataset.shape[1]
 
         freq = lil_matrix((item_num, item_num),  dtype=np.int8)
@@ -18,18 +18,16 @@ class SlopOne():
         print("total {} user".format(train_dataset.shape[0]))
         m = 0
 
-        for u in np.unique(train_dataset.row):
+        for u, ii, rr in train_dataset.get_users():
             m += 1
             if m%50 == 0:
                 print("current {}th".format(m))
-            ratings = train_dataset.getrow(u)
-            ilist = ratings.tocoo().col
-            for k in range(len(ilist) - 1):
-                i,j = ilist[k], ilist[k + 1]
+            for k in range(ii.size):
+                i, j = ii[k], ii[k + 1]
                 if i > j:
                     i, j = j, i
                 freq[i, j] += 1
-                self.dev[i, j] += ratings[0, i] - ratings[0, j]
+                self.dev[i, j] += rr[i] - rr[0, j]
 
         nonzero_indices = self.dev.nonzero()
 
@@ -44,13 +42,12 @@ class SlopOne():
         #        i, j = j, i
         #     dev[i, j] /= freq[i, j]
 
-        self.user_mean = [np.mean(train_dataset.getrow(u).data) for u in np.unique(train_dataset.row)]
-        self.coo_matrix = train_dataset
+        self.user_mean = train_dataset.get_users_mean()
         self.uid_dict = uid_dict
         self.iid_dict = iid_dict
 
     def estimate(self, test_dataset):
-        est = [self.predict(u,i, test_dataset) - r
+        est = [self.predict(u, i, test_dataset) - r
                for u, i, r in zip(test_dataset.row, test_dataset.col, test_dataset.data)]
         return np.sqrt(np.mean(est ** 2))
 

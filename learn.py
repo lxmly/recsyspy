@@ -1,8 +1,8 @@
 from scipy.sparse import csc_matrix
-from scipy.sparse import coo_matrix
+from scipy.sparse import lil_matrix
 
 import numpy as np
-
+from scipy.sparse import random
 
 if __name__ == '__main__':
     row = np.array([0, 3, 1, 0])
@@ -10,12 +10,6 @@ if __name__ == '__main__':
     data = np.array([4, 5, 7, 9])
 
     matrix = csc_matrix((data, (row, col)))
-    print(matrix[:,:].toarray())
-    print(matrix.transpose().nonzero())
-
-
-
-
-
-
-
+    print(matrix.getrow(0).toarray())
+    print(matrix.getrow(0).tocoo().nnz)
+    print(matrix.getrow(0).tocoo().data)
