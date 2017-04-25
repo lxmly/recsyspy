@@ -1,3 +1,4 @@
+
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
@@ -79,11 +80,14 @@ class Matrix:
     def __init__(self, sparse_matrix):
         self.matrix = sparse_matrix.tocoo()
         self._global_mean = None
+        self.uids = set(self.matrix.row)
+        self.iids = set(self.matrix.col)
 
     def get_item(self, i):
         return self.matrix.getcol(i).tocoo()
 
     def get_user(self, u):
+        """ return user rating detail"""
         rating = self.matrix.getrow(u).tocoo()
         return rating.col, rating.data
 
@@ -92,22 +96,25 @@ class Matrix:
             yield u, self.get_user(u)
 
     def get_users_mean(self):
+        """ compute the mean rating of each user """
+
         users_mean = {}
         for u in self.get_uids():
             users_mean[u] = np.mean(self.get_user(u)[1])
         return users_mean
 
     def all_ratings(self):
+        """ return iterator(u,v,r)"""
         return itertools.izip(self.matrix.row, self.matrix.col, self.matrix.data)
-
-    def shape(self):
-        return self.matrix.shape
 
     def get_uids(self):
         return np.unique(self.matrix.row)
 
     def get_iids(self):
         return np.unique(self.matrix.col)
+
+    def cotain_ui(self, u, i):
+        return u in self.uids and i in self.iids
 
     @property
     def global_mean(self):
@@ -119,7 +126,7 @@ if __name__ == '__main__':
     file_name = '/Users/fanruiqiang/work/data/ml-100k/u.data'
     data_builder = DataBuilder(file_name)
     train_dataset, test_dataset = data_builder.build_trainset()
-    print(train_dataset.global_mean)
+    print(train_dataset.all_ratings)
     #slopOne = SlopOne()
     #slopOne.train(coo_matrix, uid_dict, iid_dict)
     #print(slopOne.estimate(0,7))

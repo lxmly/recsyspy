@@ -12,4 +12,3 @@ if __name__ == '__main__':
     matrix = csc_matrix((data, (row, col)))
     print(matrix.getrow(0).toarray())
     print(matrix.getrow(0).tocoo().nnz)
-    print(matrix.getrow(0).tocoo().data)

@@ -27,7 +27,7 @@ class SlopOne:
                 if i > j:
                     i, j = j, i
                 freq[i, j] += 1
-                self.dev[i, j] += rr[i] - rr[0, j]
+                self.dev[i, j] += rr[i] - rr[j]
 
         nonzero_indices = self.dev.nonzero()
 
@@ -43,15 +43,18 @@ class SlopOne:
         #     dev[i, j] /= freq[i, j]
 
         self.user_mean = train_dataset.get_users_mean()
-        self.uid_dict = uid_dict
-        self.iid_dict = iid_dict
 
     def estimate(self, test_dataset):
         est = [self.predict(u, i, test_dataset) - r
                for u, i, r in zip(test_dataset.row, test_dataset.col, test_dataset.data)]
+
         return np.sqrt(np.mean(est ** 2))
 
-    def predict(self, u, i, test_dataset):
+    def predict(self, u, k, test_dataset):
+        ii, rr = test_dataset.get_user(u)
+        for i in ii if dev.contain_uv(k, i):
+
+
         Ru = np.unique(test_dataset.getrow(u).tocoo().col)
         return self.user_mean[u] + np.sum([self.dev[i, j] for j in Ru]) / len(Ru)
 
