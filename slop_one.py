@@ -4,59 +4,69 @@ import numpy as np
 from scipy.sparse import csc_matrix
 from scipy.sparse import lil_matrix
 import itertools
+from matrix import Matrix
+from estimate import Estimator
 
 
-class SlopOne:
-    def __init__(self):
-        pass
+class SlopOne(Estimator):
+    def __init__(self, is_weighted=False):
+        self.is_weighted = is_weighted
+
     def train(self, train_dataset):
-        item_num = train_dataset.shape[1]
+        item_num = train_dataset.matrix.shape[1]
 
         freq = lil_matrix((item_num, item_num),  dtype=np.int8)
-        self.dev = lil_matrix((item_num, item_num),  dtype=np.double)
+        dev = lil_matrix((item_num, item_num),  dtype=np.double)
 
-        print("total {} user".format(train_dataset.shape[0]))
+        print("total {} user, {} ratings".format(train_dataset.matrix.shape[0], train_dataset.matrix.size))
+
         m = 0
-
-        for u, ii, rr in train_dataset.get_users():
+        for u, (ii, rr) in train_dataset.get_users():
             m += 1
             if m%50 == 0:
                 print("current {}th".format(m))
-            for k in range(ii.size):
-                i, j = ii[k], ii[k + 1]
-                if i > j:
-                    i, j = j, i
-                freq[i, j] += 1
-                self.dev[i, j] += rr[i] - rr[j]
+            for k in range(ii.size - 1):
+                k1, k2 = k, k+1
+                i1, i2 = ii[k1], ii[k2]
+                if i1 > i2:
+                    i1, i2 = i2, i1
+                    k1, k2 = k2, k1
+                freq[i1, i2] += 1
+                dev[i1, i2] += rr[k1] - rr[k2]
 
-        nonzero_indices = self.dev.nonzero()
+        nonzero_indices = freq.nonzero()
 
-        self.dev[nonzero_indices] /= freq[nonzero_indices]
+        dev[nonzero_indices] /= freq[nonzero_indices]
 
-        nonzero_indices_T = self.dev.transpose().nonzero()
-
-        self.dev[nonzero_indices_T] = self.dev[nonzero_indices]
+        dev[(nonzero_indices[1], nonzero_indices[0])] = -dev[nonzero_indices]
+        freq[(nonzero_indices[1], nonzero_indices[0])] = freq[nonzero_indices]
 
         # for i,j in zip(dev.nonzero()):
         #     if i > j:
         #        i, j = j, i
         #     dev[i, j] /= freq[i, j]
 
-        self.user_mean = train_dataset.get_users_mean()
+        self.dev = Matrix(dev)
+        self.freq = Matrix(freq)
+        self.user_means = train_dataset.get_user_means()
+        self.train_dataset = train_dataset
 
-    def estimate(self, test_dataset):
-        est = [self.predict(u, i, test_dataset) - r
-               for u, i, r in zip(test_dataset.row, test_dataset.col, test_dataset.data)]
+    def predict(self, u, i, r):
+        if not (self.train_dataset.has_user(u) and
+                    self.train_dataset.has_item(i)):
+            return r, self.train_dataset.global_mean
 
-        return np.sqrt(np.mean(est ** 2))
+        N = [j for j in self.train_dataset.get_user(u)[0] if self.freq.matrix[i, j] > 0]
+        est = self.user_means[u]
 
-    def predict(self, u, k, test_dataset):
-        ii, rr = test_dataset.get_user(u)
-        for i in ii if dev.contain_uv(k, i):
+        if N:
+            if self.is_weighted:
 
-
-        Ru = np.unique(test_dataset.getrow(u).tocoo().col)
-        return self.user_mean[u] + np.sum([self.dev[i, j] for j in Ru]) / len(Ru)
+                est = sum([(self.train_dataset.matrix[u, j] + self.dev.matrix[i, j]) * self.freq.matrix[i, j] for j in N]) /\
+                      sum([self.freq.matrix[i, j] for j in N])
+            else:
+                est += np.mean([self.dev.matrix[i, j] for j in N])
+        return r, est
 
 
 

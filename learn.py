@@ -1,14 +1,37 @@
-from scipy.sparse import csc_matrix
+import scipy.sparse as sparse
 from scipy.sparse import lil_matrix
-
+from slop_one import SlopOne
 import numpy as np
+
+from itemCF import ItemCF
 from scipy.sparse import random
+from matrix import Matrix
+from scipy.stats import cosine
 
 if __name__ == '__main__':
-    row = np.array([0, 3, 1, 0])
-    col = np.array([0, 3, 1, 2])
-    data = np.array([4, 5, 7, 9])
+    row = np.array([0, 0, 1, 1, 2, 2])
+    col = np.array([1, 2, 1, 2, 1, 2])
+    data = np.array([2, 1, 2, 1, 2, 1])
 
-    matrix = csc_matrix((data, (row, col)))
-    print(matrix.getrow(0).toarray())
-    print(matrix.getrow(0).tocoo().nnz)
+    matrix = sparse.csc_matrix((data, (row, col))).todok()
+    print matrix.A
+
+    print sparse.eye(3)
+
+
+
+    # matrix.data[1] = 100
+    #
+    # print(matrix.A)
+
+    # itemCF = ItemCF()
+    # itemCF.train(Matrix(matrix))
+    #
+    # print(itemCF.sim.A)
+    #
+    # print([1,2,3,4,5][0:30])
+
+
+    # matrix[matrix < 3] = 0
+    # print(matrix.A)
+

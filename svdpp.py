@@ -3,11 +3,13 @@
 import numpy as np
 
 class SVDpp:
+
     def __init__(self, n_factors=20, n_epochs=20, lr=0.007, reg=.002):
         self.n_factors = n_factors
         self.n_epochs = n_epochs
         self.lr = lr
         self.reg = reg
+
     def train(self, coo_matrix):
         user_num = coo_matrix.shape[0]
         item_num = coo_matrix.shape[1]
@@ -60,7 +62,7 @@ class SVDpp:
                 p[u] += self.lr * (e_ui * q[i] - self.reg * p[u])
                 q[i] += self.lr * (e_ui * (p[u] + u_impl_prf) - self.reg * q[i])
                 for j in Nu:
-                    y[j] += self.lr * (e_ui  * q[j] / sqrt_N_u - self.reg * y[j])
+                    y[j] += self.lr * (e_ui * q[j] / sqrt_N_u - self.reg * y[j])
 
 
 
