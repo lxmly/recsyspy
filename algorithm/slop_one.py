@@ -1,11 +1,10 @@
 # -*- coding:utf-8 -*-
 
 import numpy as np
-from scipy.sparse import csc_matrix
 from scipy.sparse import lil_matrix
-import itertools
-from matrix import Matrix
-from estimate import Estimator
+
+from estimator import Estimator
+from util.matrix import Matrix
 
 
 class SlopOne(Estimator):
@@ -18,13 +17,13 @@ class SlopOne(Estimator):
         freq = lil_matrix((item_num, item_num),  dtype=np.int8)
         dev = lil_matrix((item_num, item_num),  dtype=np.double)
 
-        print("total {} user, {} ratings".format(train_dataset.matrix.shape[0], train_dataset.matrix.size))
-
+        len = train_dataset.matrix.shape[0]
         m = 0
         for u, (ii, rr) in train_dataset.get_users():
             m += 1
-            if m%50 == 0:
-                print("current {}th".format(m))
+            if m%100 == 0:
+                progress = 100 * (m / len)
+                print("progress: %.2f%%" % progress)
             for k in range(ii.size - 1):
                 k1, k2 = k, k+1
                 i1, i2 = ii[k1], ii[k2]
@@ -52,16 +51,11 @@ class SlopOne(Estimator):
         self.train_dataset = train_dataset
 
     def predict(self, u, i, r):
-        if not (self.train_dataset.has_user(u) and
-                    self.train_dataset.has_item(i)):
-            return r, self.train_dataset.global_mean
-
         N = [j for j in self.train_dataset.get_user(u)[0] if self.freq.matrix[i, j] > 0]
         est = self.user_means[u]
 
         if N:
             if self.is_weighted:
-
                 est = sum([(self.train_dataset.matrix[u, j] + self.dev.matrix[i, j]) * self.freq.matrix[i, j] for j in N]) /\
                       sum([self.freq.matrix[i, j] for j in N])
             else:

@@ -1,13 +1,13 @@
 # -*- coding:utf-8 -*-
+from __future__ import division, print_function
 
 import numpy as np
 from scipy.sparse import lil_matrix
-import itertools
-from matrix import Matrix
-from estimate import Estimator
-from scipy import sparse
 
-class ItemCF(Estimator):
+from estimator import Estimator
+
+
+class Itemcf(Estimator):
 
     """
     Attributes
@@ -16,12 +16,11 @@ class ItemCF(Estimator):
        coo矩阵的上线限制 
     """
 
-    def __init__(self, min=2, topk=40):
+    def __init__(self, min=2, topk=50):
         self.min = min
         self.topk = topk
 
-    def compute_cosine_similarity(self, item_num, users_ratings):
-        
+    def compute_cosine_similarity(self, user_num, item_num, users_ratings):
         sim = lil_matrix((item_num, item_num), dtype=np.double)
 
         #点积
@@ -36,7 +35,9 @@ class ItemCF(Estimator):
         #共现矩阵
         coo = lil_matrix((item_num, item_num), dtype=np.double)
 
+        m = 1
         for u, (ii, rr) in users_ratings:
+            m = m + 1
             for k in range(len(ii) - 1):
                 k1, k2 = k, k+1
                 i1, i2 = ii[k1], ii[k2]
@@ -48,7 +49,13 @@ class ItemCF(Estimator):
                 sqr[i1, i2] += rr[k2]**2
                 coo[i1, i2] += 1
 
-        #lil不适合进行矩阵算术操作，转为csc格式
+            if m % 50 == 0:
+                progress = 100 * (m / user_num)
+                print("coo progress: %.2f%%" % progress)
+
+
+
+        #dok_matrix不适合进行矩阵算术操作，转为csc格式
         dot = dot.tocsc()
         sql = sql.tocsc()
         sqr = sqr.tocsc()
@@ -71,19 +78,15 @@ class ItemCF(Estimator):
 
     def train(self, train_dataset):
         print("total {} user, {} ratings".format(train_dataset.matrix.shape[0], train_dataset.matrix.nnz))
+        user_num = train_dataset.matrix.shape[0]
         item_num = train_dataset.matrix.shape[1]
-        self.sim = self.compute_cosine_similarity(item_num, train_dataset.get_users())
-        self.train_dataset = train_dataset
+        self.sim = self.compute_cosine_similarity(user_num, item_num, train_dataset.get_users())
         self.item_means = train_dataset.get_item_means()
         self.user_means = train_dataset.get_user_means()
-
+        self.train_dataset = train_dataset
         print("train end")
 
     def predict(self, u, i, r):
-        if not self.train_dataset.has_user(u) or \
-                not self.train_dataset.has_item(i):
-            return r, self.train_dataset.global_mean
-
         ll, rr = self.train_dataset.get_user(u)
         neighbors = [(sim_i, self.sim[i, sim_i], sim_r) for sim_i, sim_r in zip(ll, rr)]
 
@@ -99,15 +102,3 @@ class ItemCF(Estimator):
         if divisor != 0:
             est += sum / divisor
         return r, est
-
-
-
-
-
-
-
-
-
-
-
-

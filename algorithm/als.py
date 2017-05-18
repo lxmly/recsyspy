@@ -1,8 +1,10 @@
 import numpy as np
-from estimate import Estimator
 import scipy.sparse as sparse
 from scipy.sparse.linalg import spsolve
-from matrix import Matrix
+
+from algorithm.estimator import Estimator
+from util.matrix import Matrix
+
 
 class ExplicitALS(Estimator):
 
@@ -47,10 +49,6 @@ class ExplicitALS(Estimator):
         self.Y = Matrix(Y)
 
     def predict(self, u, i, r):
-        if not (self.X.has_user(u) and
-                    self.Y.has_user(i)):
-            return r, self.train_dataset.global_mean
-
         est = self.X.matrix[u, :].dot(self.Y.matrix[i, :].T)[0, 0]
         return r, est
 

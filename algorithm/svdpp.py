@@ -1,8 +1,11 @@
 # -*- coding:utf-8 -*-
+from __future__ import division, print_function
 
 import numpy as np
+from estimator import Estimator
 
-class SVDpp:
+
+class SVDPlusPlus(Estimator):
 
     def __init__(self, n_factors=20, n_epochs=20, lr=0.007, reg=.002):
         self.n_factors = n_factors
@@ -10,12 +13,13 @@ class SVDpp:
         self.lr = lr
         self.reg = reg
 
-    def train(self, coo_matrix):
-        user_num = coo_matrix.shape[0]
-        item_num = coo_matrix.shape[1]
+    def train(self, train_dataset):
+        user_num = train_dataset.matrix.shape[0]
+        item_num = train_dataset.matrix.shape[1]
+        self.train_dataset = train_dataset
 
         #global mean
-        global_mean = coo_matrix.sum() / coo_matrix.nnz
+        global_mean = train_dataset.global_mean
 
         #user bias
         bu = np.zeros(user_num, np.double)
@@ -35,14 +39,14 @@ class SVDpp:
         for current_epoch in range(self.n_epochs):
             print(" processing epoch {}".format(current_epoch))
             k=0
-            for u, i, r in zip(coo_matrix.row, coo_matrix.col, coo_matrix.data):
+            for u, i, r in train_dataset.all_ratings():
                 k += 1
                 if k % 100 == 0:
                     print(" processing line {}".format(k))
 
-                #用户u点评的item数
-                Nu = coo_matrix.getrow(u).tocoo().col
-                I_Nu = coo_matrix.getrow(u).nnz
+                #用户u点评的item集
+                Nu = train_dataset.get_user(u)[0]
+                I_Nu = len(Nu)
                 sqrt_N_u = np.sqrt(I_Nu)
 
                 #基于用户u点评的item集推测u的implicit偏好
@@ -64,6 +68,20 @@ class SVDpp:
                 for j in Nu:
                     y[j] += self.lr * (e_ui * q[j] / sqrt_N_u - self.reg * y[j])
 
+        self.global_mean = global_mean
+        self.bu = bu
+        self.bi = bi
+        self.q = q
+        self.p = p
+        self.y = y
 
+    def predict(self, u, i, r):
+        Nu = self.train_dataset.get_user(u)[0]
+        I_Nu = len(Nu)
+        sqrt_N_u = np.sqrt(I_Nu)
+        y_u = np.sum(self.y[Nu], axis=0) / sqrt_N_u
+
+        est = self.global_mean + self.bu[u] + self.bi[i] + np.dot(self.q[i], self.p[u] + y_u)
+        return r, est
 
 
