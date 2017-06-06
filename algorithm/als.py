@@ -1,58 +1,53 @@
+# -*- coding:utf-8 -*-
+
 import numpy as np
 import scipy.sparse as sparse
-from scipy.sparse.linalg import spsolve
-
-from algorithm.estimator import Estimator
-from util.matrix import Matrix
+from algorithm.mf.estimator import IterationEstimator
 
 
-class ExplicitALS(Estimator):
+class ExplicitALS(IterationEstimator):
+    """显式交替最小二乘，算法表现一般，从它的损失函数也可以看出，
+       是最简单的svd。只不过ALS相比SGD速度快一点
+    """
 
-    def __init__(self, n_factors=20, n_epochs=20, reg=.1):
+    def __init__(self, n_factors=20, n_epochs=10, reg=0.1):
         self.n_factors = n_factors
         self.n_epochs = n_epochs
         self.reg = reg
 
-    def als(self, X, Y, is_user):
-        print 'num %d' % (X.shape[0])
-        YTY_regI = Y.T.dot(Y) + self.reg * sparse.eye(self.n_factors)
-        uuids = self.train_dataset.uids if is_user else self.train_dataset.iids
+    #交替！
+    def alternative(self, X, Y, is_user):
+        reg_I = self.reg * sparse.eye(self.n_factors)
+        uids = self.train_dataset.uids if is_user else self.train_dataset.iids
 
-        m = 0
-        for u in uuids:
-            if m % 100 == 0:
-                print 'cur %d th u' % (m)
-            m += 1
-            ru = self.train_dataset.matrix[u,:].T.A if is_user else self.train_dataset.matrix[:,u].A
-            X[u] = spsolve(YTY_regI, Y.T.dot(ru))
-        return X
+        for u in uids:
+            if is_user:
+                action_idx = self.train_dataset.get_user(u)[0]
+            else:
+                action_idx = self.train_dataset.get_item(u)[0]
+            Y_u = Y[action_idx]
 
-    def normaliseRow(self, x):
-        return x / sum(x)
+            if is_user:
+                ru = self.train_dataset.matrix.A[u, action_idx]
+            else:
+                ru = self.train_dataset.matrix.A[action_idx, u]
 
-    def initialiseMatrix(self, n, f):
-        return np.apply_along_axis(self.normaliseRow, 1, abs(np.random.randn(n, f)))
+            X[u] = np.linalg.solve(np.dot(np.transpose(Y_u), Y_u) + reg_I, np.dot(Y_u.T, ru))
 
-    def train(self, train_dataset):
-        user_num = train_dataset.matrix.shape[0]
-        item_num = train_dataset.matrix.shape[1]
+    def _prepare(self, train_dataset):
         self.train_dataset = train_dataset
+        self.user_num = self.train_dataset.matrix.shape[0]
+        self.item_num = train_dataset.matrix.shape[1]
+        self.X = np.random.normal(size=(self.user_num, self.n_factors))
+        self.Y = np.random.normal(size=(self.item_num, self.n_factors))
 
-        X = sparse.csr_matrix(self.initialiseMatrix(user_num, self.n_factors))
-        Y = sparse.csr_matrix(self.initialiseMatrix(item_num, self.n_factors))
+    def _iteration(self):
+        self.alternative(self.X, self.Y, True)
+        self.alternative(self.Y, self.X, False)
 
-        for k in range(self.n_epochs):
-            print("the {}th epochs.".format(k))
-            X = self.als(X, Y, True)
-            Y = self.als(Y, X, False)
-        self.X = Matrix(X)
-        self.Y = Matrix(Y)
+    def _pred(self):
+        return np.dot(self.X, self.Y.T)
 
     def predict(self, u, i, r):
-        est = self.X.matrix[u, :].dot(self.Y.matrix[i, :].T)[0, 0]
+        est = np.dot(self.X[u,:], self.Y[i,:])
         return r, est
-
-
-
-
-
