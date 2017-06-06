@@ -3,11 +3,12 @@
 import numpy as np
 from scipy.sparse import lil_matrix
 
-from estimator import Estimator
+from algorithm.mf.estimator import Estimator
 from util.matrix import Matrix
 
 
 class SlopOne(Estimator):
+
     def __init__(self, is_weighted=False):
         self.is_weighted = is_weighted
 
@@ -21,7 +22,7 @@ class SlopOne(Estimator):
         m = 0
         for u, (ii, rr) in train_dataset.get_users():
             m += 1
-            if m%100 == 0:
+            if m % 300 == 0:
                 progress = 100 * (m / len)
                 print("progress: %.2f%%" % progress)
             for k in range(ii.size - 1):
