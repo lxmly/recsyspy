@@ -8,20 +8,32 @@ import os
 
 import numpy as np
 from scipy.sparse import csr_matrix
-
 from util.matrix import Matrix
 
 
-class DataBuilder:
-    def __init__(self, file_name, k_folds=10):
+class DataBuilder(object):
+    """构造数据模型
+       
+       参数
+       ----------    
+       file_name : 文件地址，这里用的grouplens数据集
+       k_folds : k折交叉验证
+       shuffle : 是否对数据shuffle
+       just_test_one : k折交叉验证要运行k次，这里只运行一次，方便测试程序正确性
+    """
+    def __init__(self, file_name, k_folds=7, shuffle=True, just_test_one=True):
         self.file_name = file_name
         self.k_folds = k_folds
+        self.shuffle = shuffle
+        self.just_test_one = just_test_one
 
+    #读取数据
     def read_ratings(self):
         with open(os.path.expanduser(self.file_name)) as f:
             raw_ratings = [self.parse_line(line) for line in itertools.islice(f, 0, None)]
         return raw_ratings
 
+    #文件格式 uid \t iid \t rating \t timestamp
     def parse_line(self, line):
         line = line.split("\t")
         uid, iid, r, timestamp = (line[i].strip() for i in range(4))
@@ -29,15 +41,22 @@ class DataBuilder:
 
     def cv(self):
         raw_ratings = self.read_ratings()
+
+        if self.shuffle:
+            np.random.shuffle(raw_ratings)
+
         stop = 0
         raw_len = len(raw_ratings)
         offset = raw_len // self.k_folds
         left = raw_len % self.k_folds
         for fold_i in range(self.k_folds):
+            print("current fold {}".format(fold_i + 1))
             start = stop
             stop += offset
             if fold_i < left:
                 stop += 1
+
+            #使用生成器，提高效率
             yield self.mapping(raw_ratings[:start] + raw_ratings[stop:]), raw_ratings[start:stop]
 
     def mapping(self, raw_train_ratings):
@@ -71,30 +90,12 @@ class DataBuilder:
 
         return Matrix(sparse_matrix, uid_dict, iid_dict)
 
-    # def cv(self):
-    #     sparse_matrix = self.mapping()
-    #     print(sparse_matrix.shape)
-    #     row_index = np.arange(sparse_matrix.shape[0])
-    #     np.random.shuffle(row_index)
-    #
-    #     offset = row_index.size // self.k_folds
-    #     left = row_index.size % self.k_folds
-    #     stop = 0
-    #
-    #     for fold_i in range(self.k_folds):
-    #         start = stop
-    #         stop += offset
-    #         if fold_i < left:
-    #             stop += 1
-    #         yield Matrix(sparse_matrix[np.append(row_index[:start], row_index[stop:], axis=0)]), \
-    #               Matrix(sparse_matrix[row_index[start:stop]])
-
-    def rmse(self, algorithm, pause=True):
+    def rmse(self, algorithm):
         rmse_result = []
 
         for train_dataset, test_dataset in self.cv():
             algorithm.train(train_dataset)
             rmse_result.append(algorithm.estimate(test_dataset))
-            if pause:
+            if self.just_test_one:
                 break
         print(np.mean(rmse_result))
