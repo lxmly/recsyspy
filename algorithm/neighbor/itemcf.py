@@ -4,7 +4,7 @@ from __future__ import division, print_function
 import numpy as np
 from scipy.sparse import lil_matrix
 
-from estimator import Estimator
+from algorithm.mf.estimator import Estimator
 
 
 class Itemcf(Estimator):
@@ -16,7 +16,7 @@ class Itemcf(Estimator):
        coo矩阵的上线限制 
     """
 
-    def __init__(self, min=2, topk=50):
+    def __init__(self, min=2, topk=20):
         self.min = min
         self.topk = topk
 
