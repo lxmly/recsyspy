@@ -17,6 +17,9 @@
 ## 数据集
 * MovieLens 
 
+## 依赖
+* scipy
+* numpy
 
 ## 参考paper
 * Yehuda Koren. Factorization meets the neighborhood: a multifaceted collaborative filtering model
