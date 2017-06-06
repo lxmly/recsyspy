@@ -9,7 +9,7 @@ from algorithm.neighbor.slop_one import SlopOne
 from algorithm.neighbor.itemcf import Itemcf
 
 
-file_name = os.path.abspath("data/u.data")
+file_name = os.path.abspath("data/ml-100k/u.data")
 data_builder = DataBuilder(file_name, k_folds=5, just_test_one=True)
 
 
