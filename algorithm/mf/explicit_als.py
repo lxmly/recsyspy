@@ -7,7 +7,7 @@ from algorithm.mf.estimator import IterationEstimator
 
 class ExplicitALS(IterationEstimator):
     """显式交替最小二乘，算法表现一般，从它的损失函数也可以看出，
-       是最简单的svd。只不过ALS相比SGD速度快一点
+       是最简单的svd。只不过ALS相比SGD速度快一点, 一般10次迭代就能收敛
     """
 
     def __init__(self, n_factors=20, n_epochs=10, reg=0.1):
@@ -30,7 +30,7 @@ class ExplicitALS(IterationEstimator):
             if is_user:
                 ru = self.train_dataset.matrix.A[u, action_idx]
             else:
-                ru = self.train_dataset.matrix.A[action_idx, u]
+                ru = self.train_dataset.matrix.A[action_idx, u].T
 
             X[u] = np.linalg.solve(np.dot(np.transpose(Y_u), Y_u) + reg_I, np.dot(Y_u.T, ru))
 
