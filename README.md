@@ -6,6 +6,7 @@
 | :-------- |
 | Baseline  |
 | Explicit ALS  |
+| Implicit ALS |
 | SVD|
 | SVDPlusPlus|
 
