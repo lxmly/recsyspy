@@ -35,9 +35,9 @@ class Itemcf(Estimator):
         #共现矩阵
         coo = lil_matrix((item_num, item_num), dtype=np.double)
 
-        m = 1
+        cur = 1
         for u, (ii, rr) in users_ratings:
-            m = m + 1
+            cur = cur + 1
             for k in range(len(ii) - 1):
                 k1, k2 = k, k+1
                 i1, i2 = ii[k1], ii[k2]
@@ -48,12 +48,7 @@ class Itemcf(Estimator):
                 sql[i1, i2] += rr[k1]**2
                 sqr[i1, i2] += rr[k2]**2
                 coo[i1, i2] += 1
-
-            if m % 50 == 0:
-                progress = 100 * (m / user_num)
-                print("coo progress: %.2f%%" % progress)
-
-
+            self.progress(cur, user_num, 50)
 
         #dok_matrix不适合进行矩阵算术操作，转为csc格式
         dot = dot.tocsc()
@@ -74,17 +69,14 @@ class Itemcf(Estimator):
         sim[row, col] = dot[row, col] / np.sqrt((sql)[row, col])
         sim[col, row] = sim[row, col]
 
-        return sim
+        return sim.A
 
-    def train(self, train_dataset):
-        print("total {} user, {} ratings".format(train_dataset.matrix.shape[0], train_dataset.matrix.nnz))
-        user_num = train_dataset.matrix.shape[0]
-        item_num = train_dataset.matrix.shape[1]
-        self.sim = self.compute_cosine_similarity(user_num, item_num, train_dataset.get_users())
-        self.item_means = train_dataset.get_item_means()
-        self.user_means = train_dataset.get_user_means()
-        self.train_dataset = train_dataset
-        print("train end")
+    def _train(self):
+        user_num = self.train_dataset.matrix.shape[0]
+        item_num = self.train_dataset.matrix.shape[1]
+        self.sim = self.compute_cosine_similarity(user_num, item_num, self.train_dataset.get_users())
+        self.item_means = self.train_dataset.get_item_means()
+        self.user_means = self.train_dataset.get_user_means()
 
     def predict(self, u, i, r):
         ll, rr = self.train_dataset.get_user(u)

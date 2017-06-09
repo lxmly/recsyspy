@@ -13,12 +13,12 @@ class SVD(IterationEstimator):
         self.lr = lr
         self.reg = reg
 
-    def _prepare(self, train_dataset):
-        self.train_dataset = train_dataset
-        self.user_num = train_dataset.matrix.shape[0]
-        self.item_num = train_dataset.matrix.shape[1]
+    def _prepare(self):
+        self.train_dataset = self.train_dataset
+        self.user_num = self.train_dataset.matrix.shape[0]
+        self.item_num = self.train_dataset.matrix.shape[1]
 
-        self.global_mean = train_dataset.global_mean
+        self.global_mean = self.train_dataset.global_mean
         # user bias
         self.bu = np.zeros(self.user_num, np.double)
 

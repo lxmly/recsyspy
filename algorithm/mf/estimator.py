@@ -3,6 +3,7 @@
 from __future__ import division, print_function
 
 import numpy as np
+import util.tools as tl
 
 
 class Estimator(object):
@@ -13,22 +14,37 @@ class Estimator(object):
         pass
 
     def train(self, train_dataset):
+        self.train_dataset = train_dataset
+
+        with tl.Timer() as t:
+            self._train()
+
+        print('train process cost %.03f sec' % t.interval)
+
+    def _train(self):
         raise NotImplementedError()
 
     def predict(self, u, i, r):
         raise NotImplementedError()
 
     def estimate(self, raw_test_dataset):
+        with tl.Timer() as t:
+            error = self._estimate(raw_test_dataset)
+
+        print('predict process cost %.03f sec' % t.interval)
+        return error
+
+    def _estimate(self, raw_test_dataset):
         users_mean = self.train_dataset.get_user_means()
         items_mean = self.train_dataset.get_item_means()
 
-        l = len(raw_test_dataset)
+        all = len(raw_test_dataset)
         predictions = []
-        m = 0
+        cur = 0
         alg_count = 0
 
         for raw_u, raw_i, r, _ in raw_test_dataset:
-            m += 1
+            cur += 1
             has_raw_u = raw_u in self.train_dataset.uid_dict
             has_raw_i = raw_i in self.train_dataset.iid_dict
 
@@ -49,29 +65,32 @@ class Estimator(object):
             est = min(5, est)
             est = max(1, est)
             predictions.append((real - est) ** 2)
-            if m%300 == 0:
-                progress = 100 * (m / l)
-                print("progress: {:.2f}%".format(progress))
 
+            self.progress(cur, all, 300)
         rmse = np.sqrt(np.mean(predictions))
         print("this fold rmse:{:.2f}".format(rmse))
 
         return rmse
 
+    @staticmethod
+    def progress(cur, all, bin=50):
+        if cur % bin == 0 or cur == all:
+            progress = 100 * (cur / all)
+            print("progress: %.2f%%" % progress)
 
 
 class IterationEstimator(Estimator):
     """适合迭代式算法"""
 
-    def train(self, train_dataset):
-        self._prepare(train_dataset)
+    def _train(self):
+        self._prepare()
         for current_epoch in range(self.n_epochs):
             print(" processing epoch {}".format(current_epoch))
             self._iteration()
             print(" cur train rmse {}".format(self._rmse()))
 
     #准备工作
-    def _prepare(self, train_dataset):
+    def _prepare(self):
         raise NotImplementedError()
 
     #核心迭代

@@ -39,10 +39,9 @@ class ImplicitALS(IterationEstimator):
 
             X[u] = spsolve(YTY + YT_CuI_Y + reg_I, YT_CuI_pu)
 
-    def _prepare(self, train_dataset):
-        self.train_dataset = train_dataset
+    def _prepare(self):
         self.user_num = self.train_dataset.matrix.shape[0]
-        self.item_num = train_dataset.matrix.shape[1]
+        self.item_num = self.train_dataset.matrix.shape[1]
         self.X = sparse.csr_matrix(np.random.normal(size=(self.user_num, self.n_factors)))
         self.Y = sparse.csr_matrix(np.random.normal(size=(self.item_num, self.n_factors)))
 

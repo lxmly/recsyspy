@@ -34,10 +34,9 @@ class ExplicitALS(IterationEstimator):
 
             X[u] = np.linalg.solve(np.dot(np.transpose(Y_u), Y_u) + reg_I, np.dot(Y_u.T, ru))
 
-    def _prepare(self, train_dataset):
-        self.train_dataset = train_dataset
+    def _prepare(self):
         self.user_num = self.train_dataset.matrix.shape[0]
-        self.item_num = train_dataset.matrix.shape[1]
+        self.item_num = self.train_dataset.matrix.shape[1]
         self.X = np.random.normal(size=(self.user_num, self.n_factors))
         self.Y = np.random.normal(size=(self.item_num, self.n_factors))
 
