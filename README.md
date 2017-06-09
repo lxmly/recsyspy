@@ -2,18 +2,19 @@
 经典推荐算法实现
 
 ## 算法
-| 矩阵分解模型 | 
-| :-------- |
-| Baseline  |
-| Explicit ALS  |
-| Implicit ALS |
-| SVD|
-| SVDPlusPlus|
+| 矩阵分解模型 | RMSE     | 
+| :-------- | :-------- |
+| Baseline  | 0.946| 
+| SVD|0.9312|
+| SVDPlusPlus|0.927|
+| Explicit ALS  |1.199|
+| Implicit ALS |2.752|
 
-|邻居模型 |
-| :-------- |
-|WeightedSlopOne|
-|Itemcf|
+|邻居模型 |RMSE|
+| :-------- |:--------|
+|WeightedSlopOne|1.05|
+|Itemcf|1.038|
+
 
 ## 数据集
 * MovieLens 
