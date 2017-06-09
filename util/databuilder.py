@@ -98,4 +98,4 @@ class DataBuilder(object):
             rmse_result.append(algorithm.estimate(test_dataset))
             if self.just_test_one:
                 break
-        print(np.mean(rmse_result))
+        print("avg rmse {}".format(np.mean(rmse_result)))

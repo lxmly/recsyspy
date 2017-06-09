@@ -8,7 +8,7 @@ import itertools
 
 class Matrix(object):
 
-    def __init__(self, sparse_matrix, uid_dict, iid_dict):
+    def __init__(self, sparse_matrix, uid_dict=None, iid_dict=None):
         self.matrix = sparse_matrix.tocsc()
         self._global_mean = None
         coo_matrix = sparse_matrix.tocoo()
@@ -75,9 +75,6 @@ class Matrix(object):
            所有物品id集 
         """
         return np.unique(self.matrix.tocoo().col)
-
-
-
 
     def has_user(self, u):
         """
