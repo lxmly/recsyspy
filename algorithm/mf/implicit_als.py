@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 
+from __future__ import division, print_function
+
 import numpy as np
 import scipy.sparse as sparse
 from algorithm.mf.estimator import IterationEstimator
@@ -7,7 +9,8 @@ from scipy.sparse.linalg import spsolve
 
 
 class ImplicitALS(IterationEstimator):
-    """隐式交替最小二乘，果然不适合显式数据，表现很离谱
+    """
+    隐式交替最小二乘，果然不适合显式数据，表现很离谱
     
     属性
     ---------
@@ -16,6 +19,7 @@ class ImplicitALS(IterationEstimator):
     reg : 正则因子
     alpha : 隐式数据评分系数
     """
+
     def __init__(self, n_factors=20, n_epochs=10, reg=0.1, alpha=40):
         self.n_factors = n_factors
         self.n_epochs = n_epochs

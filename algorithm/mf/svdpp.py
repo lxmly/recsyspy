@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+
 from __future__ import division, print_function
 
 import numpy as np
@@ -6,7 +7,7 @@ from estimator import Estimator
 
 
 class SVDPlusPlus(Estimator):
-    """SVD++算法
+    """
     属性
     ---------
     n_factors : 隐式因子数
@@ -14,6 +15,7 @@ class SVDPlusPlus(Estimator):
     lr : 学习速率
     reg : 正则因子
     """
+
     def __init__(self, n_factors=20, n_epochs=20, lr=0.007, reg=.002):
         self.n_factors = n_factors
         self.n_epochs = n_epochs

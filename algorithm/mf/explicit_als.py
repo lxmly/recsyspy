@@ -1,13 +1,16 @@
 # -*- coding:utf-8 -*-
 
+from __future__ import division, print_function
+
 import numpy as np
 import scipy.sparse as sparse
 from algorithm.mf.estimator import IterationEstimator
 
 
 class ExplicitALS(IterationEstimator):
-    """显式交替最小二乘，算法表现一般，从它的损失函数也可以看出，
-       是最简单的svd。只不过ALS相比SGD速度快一点, 一般10次迭代就能收敛
+    """
+    显式交替最小二乘，算法表现一般，从它的损失函数也可以看出，是最
+    简单的svd。只不过ALS相比SGD速度快一点, 一般10次迭代就能收敛
     
     属性
     ---------

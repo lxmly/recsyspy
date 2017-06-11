@@ -2,7 +2,8 @@ import time
 
 
 class Timer(object):
-    """time util
+    """
+    time util
     """
     def __enter__(self):
         self.start = time.clock()

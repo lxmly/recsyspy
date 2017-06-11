@@ -7,7 +7,8 @@ import util.tools as tl
 
 
 class Estimator(object):
-    """基础算法流程
+    """
+    基础算法流程
     """
 
     def __init__(self):

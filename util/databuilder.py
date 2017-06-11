@@ -12,28 +12,32 @@ from util.matrix import Matrix
 
 
 class DataBuilder(object):
-    """构造数据模型
-       
-       参数
-       ----------    
-       file_name : 文件地址，这里用的grouplens数据集
-       k_folds : k折交叉验证
-       shuffle : 是否对数据shuffle
-       just_test_one : k折交叉验证要运行k次，这里只运行一次，方便测试程序正确性
     """
+    构造数据模型
+       
+    参数
+    ----------    
+    file_name : 文件地址，这里用的grouplens数据集
+    k_folds : k折交叉验证
+    shuffle : 是否对数据shuffle
+    just_test_one : k折交叉验证要运行k次，这里只运行一次，方便测试程序正确性
+    """
+
     def __init__(self, file_name, k_folds=7, shuffle=True, just_test_one=True):
         self.file_name = file_name
         self.k_folds = k_folds
         self.shuffle = shuffle
         self.just_test_one = just_test_one
 
-    #读取数据
     def read_ratings(self):
+        """
+        读取数据
+        """
+
         with open(os.path.expanduser(self.file_name)) as f:
             raw_ratings = [self.parse_line(line) for line in itertools.islice(f, 0, None)]
         return raw_ratings
 
-    #文件格式 uid \t iid \t rating \t timestamp
     def parse_line(self, line):
         line = line.split("\t")
         uid, iid, r, timestamp = (line[i].strip() for i in range(4))

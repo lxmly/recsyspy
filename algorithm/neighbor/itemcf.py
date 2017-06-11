@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+
 from __future__ import division, print_function
 
 import numpy as np
@@ -9,7 +10,6 @@ from algorithm.mf.baseline import Baseline
 
 
 class Itemcf(Estimator):
-
     """
     属性
     ---------

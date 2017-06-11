@@ -14,6 +14,7 @@ class SlopOne(Estimator):
     ---------
     is_weighted : slopOne or weightedSlopOne
     """
+
     def __init__(self, is_weighted=False):
         self.is_weighted = is_weighted
 
