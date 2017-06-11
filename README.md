@@ -12,7 +12,7 @@
 
 |邻居模型 |RMSE|
 | :-------- |:--------|
-|Itemcf|1.038|
+|Itemcf|baseline 1.029|
 |WeightedSlopOne|1.043|
 
 
