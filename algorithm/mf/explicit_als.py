@@ -8,6 +8,12 @@ from algorithm.mf.estimator import IterationEstimator
 class ExplicitALS(IterationEstimator):
     """显式交替最小二乘，算法表现一般，从它的损失函数也可以看出，
        是最简单的svd。只不过ALS相比SGD速度快一点, 一般10次迭代就能收敛
+    
+    属性
+    ---------
+    n_factors : 隐式因子数
+    n_epochs : 迭代次数
+    reg : 正则因子
     """
 
     def __init__(self, n_factors=20, n_epochs=10, reg=0.1):
@@ -47,6 +53,6 @@ class ExplicitALS(IterationEstimator):
     def _pred(self):
         return np.dot(self.X, self.Y.T)
 
-    def predict(self, u, i, r):
+    def predict(self, u, i):
         est = np.dot(self.X[u,:], self.Y[i,:])
-        return r, est
+        return est

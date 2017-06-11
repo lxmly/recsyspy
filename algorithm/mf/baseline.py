@@ -8,6 +8,13 @@ from estimator import IterationEstimator
 class Baseline(IterationEstimator):
     """baseline
        虽然是baseline，不过整体表现比itemcf和slopne还高，也可以看出邻居模型的弊端了，缺少优化目标
+    
+    属性
+    ---------
+    n_factors : 隐式因子数
+    n_epochs : 迭代次数
+    lr : 学习速率
+    reg : 正则因子
     """
     def __init__(self, n_factors=20, n_epochs=20, lr=0.007, reg=.002):
         self.n_factors = n_factors
@@ -41,6 +48,6 @@ class Baseline(IterationEstimator):
         return self.global_mean + np.repeat(np.asmatrix(self.bu).T, self.item_num, axis=1) \
                             + np.repeat(np.asmatrix(self.bi), self.user_num, axis=0)
 
-    def predict(self, u, i, r):
+    def predict(self, u, i):
         est = self.global_mean + self.bu[u] + self.bi[i]
-        return r, est
+        return est

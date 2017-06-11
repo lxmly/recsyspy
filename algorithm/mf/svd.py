@@ -6,7 +6,14 @@ from estimator import IterationEstimator
 
 
 class SVD(IterationEstimator):
-
+    """
+    属性
+    ---------
+    n_factors : 隐式因子数
+    n_epochs : 迭代次数
+    lr : 学习速率
+    reg : 正则因子
+    """
     def __init__(self, n_factors=20, n_epochs=20, lr=0.007, reg=.002):
         self.n_factors = n_factors
         self.n_epochs = n_epochs
@@ -48,7 +55,7 @@ class SVD(IterationEstimator):
                             + np.repeat(np.asmatrix(self.bi), self.user_num, axis=0) \
                             + np.dot(self.p, self.q.T)
 
-    def predict(self, u, i, r):
+    def predict(self, u, i):
         est = self.global_mean + self.bu[u] + self.bi[i] + np.dot(self.q[i], self.p[u])
-        return r, est
+        return est
 

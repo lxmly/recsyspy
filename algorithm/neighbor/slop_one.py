@@ -9,7 +9,11 @@ from algorithm.mf.estimator import Estimator
 
 
 class SlopOne(Estimator):
-
+    """
+    属性
+    ---------
+    is_weighted : slopOne or weightedSlopOne
+    """
     def __init__(self, is_weighted=False):
         self.is_weighted = is_weighted
 
@@ -48,7 +52,7 @@ class SlopOne(Estimator):
         self.user_means = self.train_dataset.get_user_means()
         self.ratings = self.train_dataset.matrix.A
 
-    def predict(self, u, i, r):
+    def predict(self, u, i):
         N = [j for j in self.train_dataset.get_user(u)[0] if self.freq[i, j] > 0]
         est = self.user_means[u]
 
@@ -58,7 +62,7 @@ class SlopOne(Estimator):
                       sum([self.freq[i, j] for j in N])
             else:
                 est += np.mean([self.dev[i, j] for j in N])
-        return r, est
+        return est
 
 
 

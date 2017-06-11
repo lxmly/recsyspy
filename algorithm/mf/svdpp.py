@@ -6,7 +6,14 @@ from estimator import Estimator
 
 
 class SVDPlusPlus(Estimator):
-
+    """SVD++算法
+    属性
+    ---------
+    n_factors : 隐式因子数
+    n_epochs : 迭代次数
+    lr : 学习速率
+    reg : 正则因子
+    """
     def __init__(self, n_factors=20, n_epochs=20, lr=0.007, reg=.002):
         self.n_factors = n_factors
         self.n_epochs = n_epochs
@@ -63,13 +70,13 @@ class SVDPlusPlus(Estimator):
                 for j in Nu:
                     self.y[j] += self.lr * (e_ui * self.q[j] / sqrt_N_u - self.reg * self.y[j])
 
-    def predict(self, u, i, r):
+    def predict(self, u, i):
         Nu = self.train_dataset.get_user(u)[0]
         I_Nu = len(Nu)
         sqrt_N_u = np.sqrt(I_Nu)
         y_u = np.sum(self.y[Nu], axis=0) / sqrt_N_u
 
         est = self.global_mean + self.bu[u] + self.bi[i] + np.dot(self.q[i], self.p[u] + y_u)
-        return r, est
+        return est
 
 

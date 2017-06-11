@@ -19,19 +19,21 @@ class Estimator(object):
         with tl.Timer() as t:
             self._train()
 
-        print('train process cost %.03f sec' % t.interval)
+        print("{} algorithm train process cost {:.3f} sec".
+              format(self.__class__.__name__, t.interval))
 
     def _train(self):
         raise NotImplementedError()
 
-    def predict(self, u, i, r):
+    def predict(self, u, i):
         raise NotImplementedError()
 
     def estimate(self, raw_test_dataset):
         with tl.Timer() as t:
             error = self._estimate(raw_test_dataset)
 
-        print('predict process cost %.03f sec' % t.interval)
+        print("{} algorithm predict process cost {:.3f} sec".
+              format(self.__class__.__name__, t.interval))
         return error
 
     def _estimate(self, raw_test_dataset):
@@ -59,7 +61,7 @@ class Estimator(object):
             else:
                 u = self.train_dataset.uid_dict[raw_u]
                 i = self.train_dataset.iid_dict[raw_i]
-                real, est = self.predict(u, i, r)
+                real, est = r, self.predict(u, i)
                 alg_count += 1
 
             est = min(5, est)
@@ -76,7 +78,7 @@ class Estimator(object):
     def progress(cur, all, bin=50):
         if cur % bin == 0 or cur == all:
             progress = 100 * (cur / all)
-            print("progress: %.2f%%" % progress)
+            print("progress: {:.2f}%".format(progress))
 
 
 class IterationEstimator(Estimator):

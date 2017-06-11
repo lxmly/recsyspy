@@ -8,8 +8,14 @@ from scipy.sparse.linalg import spsolve
 
 class ImplicitALS(IterationEstimator):
     """隐式交替最小二乘，果然不适合显式数据，表现很离谱
+    
+    属性
+    ---------
+    n_factors : 隐式因子数
+    n_epochs : 迭代次数
+    reg : 正则因子
+    alpha : 隐式数据评分系数
     """
-
     def __init__(self, n_factors=20, n_epochs=10, reg=0.1, alpha=40):
         self.n_factors = n_factors
         self.n_epochs = n_epochs
@@ -52,6 +58,6 @@ class ImplicitALS(IterationEstimator):
     def _pred(self):
         return np.dot(self.X, self.Y.T)
 
-    def predict(self, u, i, r):
+    def predict(self, u, i):
         est = self.X[u].dot(self.Y[i].T)[0,0]
-        return r, est
+        return est

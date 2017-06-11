@@ -5,20 +5,23 @@ import numpy as np
 from scipy.sparse import lil_matrix
 
 from algorithm.mf.estimator import Estimator
+from algorithm.mf.baseline import Baseline
 
 
 class Itemcf(Estimator):
 
     """
-    Attributes
+    属性
     ---------
-    min : tuple
-       coo矩阵的上线限制 
+    min : 有效交互数下限
+    topk : 相似矩阵topk
+    use_baseline : 是否嵌入baseline计算bias
     """
 
-    def __init__(self, min=2, topk=20):
+    def __init__(self, min=2, topk=20, use_baseline=True):
         self.min = min
         self.topk = topk
+        self.use_baseline = use_baseline
 
     def compute_cosine_similarity(self, user_num, item_num, users_ratings):
         sim = lil_matrix((item_num, item_num), dtype=np.double)
@@ -72,25 +75,34 @@ class Itemcf(Estimator):
         return sim.A
 
     def _train(self):
+        if self.use_baseline:
+            self.baseline = Baseline()
+            self.baseline.train(self.train_dataset)
+
         user_num = self.train_dataset.matrix.shape[0]
         item_num = self.train_dataset.matrix.shape[1]
         self.sim = self.compute_cosine_similarity(user_num, item_num, self.train_dataset.get_users())
         self.item_means = self.train_dataset.get_item_means()
         self.user_means = self.train_dataset.get_user_means()
 
-    def predict(self, u, i, r):
+    def predict(self, u, i):
         ll, rr = self.train_dataset.get_user(u)
         neighbors = [(sim_i, self.sim[i, sim_i], sim_r) for sim_i, sim_r in zip(ll, rr)]
 
         neighbors = sorted(neighbors, key=lambda tple: tple[1], reverse=True)[0:self.topk]
-        est = self.item_means[i]
+        est = self.baseline.predict(u, i) if self.use_baseline else self.item_means[i]
         sum = 0
         divisor = 0
 
         for sim_i, sim, sim_r in neighbors:
-            sum += sim * (sim_r - self.item_means[sim_i])
+            if self.use_baseline:
+                bias = sim_r - self.item_means[sim_i]
+            else:
+                bias = sim_r - self.baseline.predict(u, sim_i)
+
+            sum += sim * bias
             divisor += sim
 
         if divisor != 0:
             est += sum / divisor
-        return r, est
+        return est
