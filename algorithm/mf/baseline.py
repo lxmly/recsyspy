@@ -8,7 +8,7 @@ from estimator import IterationEstimator
 
 class Baseline(IterationEstimator):
     """
-    虽然是baseline，不过整体表现比itemcf和slopne还高，
+    虽然是baseline，不过整体表现比itemcf和slopOne还高，
     也可以看出邻居模型的弊端了，缺少优化目标
     
     属性
