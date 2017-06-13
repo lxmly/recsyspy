@@ -4,6 +4,7 @@ from __future__ import division, print_function
 
 import numpy as np
 import util.tools as tl
+import util.measure as ms
 
 
 class Estimator(object):
@@ -29,20 +30,20 @@ class Estimator(object):
     def predict(self, u, i):
         raise NotImplementedError()
 
-    def estimate(self, raw_test_dataset):
+    def estimate(self, raw_test_dataset, measures):
         with tl.Timer() as t:
-            error = self._estimate(raw_test_dataset)
+            error = self._estimate(raw_test_dataset, measures)
 
         print("{} algorithm predict process cost {:.3f} sec".
               format(self.__class__.__name__, t.interval))
         return error
 
-    def _estimate(self, raw_test_dataset):
+    def _estimate(self, raw_test_dataset, measures):
         users_mean = self.train_dataset.get_user_means()
         items_mean = self.train_dataset.get_item_means()
 
         all = len(raw_test_dataset)
-        predictions = []
+        errors = []
         cur = 0
         alg_count = 0
 
@@ -67,13 +68,12 @@ class Estimator(object):
 
             est = min(5, est)
             est = max(1, est)
-            predictions.append((real - est) ** 2)
+            errors.append(real - est)
 
             self.progress(cur, all, 300)
-        rmse = np.sqrt(np.mean(predictions))
-        print("this fold rmse:{:.2f}".format(rmse))
 
-        return rmse
+        fold_eval_result = [getattr(ms, measure)(errors) for measure in measures]
+        return fold_eval_result
 
     @staticmethod
     def progress(cur, all, bin=50):
@@ -90,22 +90,34 @@ class IterationEstimator(Estimator):
         for current_epoch in range(self.n_epochs):
             print(" processing epoch {}".format(current_epoch))
             self._iteration()
-            print(" cur train rmse {}".format(self._rmse()))
+            print(" cur train rmse {}".format(self._eval()))
 
-    #准备工作
     def _prepare(self):
+        """
+        准备工作
+        """
+
         raise NotImplementedError()
 
-    #核心迭代
     def _iteration(self):
+        """
+        核心迭代
+        """
+
         raise NotImplementedError()
 
-    #整体预测
     def _pred(self):
+        """
+        核心迭代
+        """
+
         raise NotImplementedError()
 
-    #整体rmse
-    def _rmse(self):
+    def _eval(self):
+        """
+        整体eval
+        """
+
         pred_ratings = self._pred()
         real_ratings = self.train_dataset.matrix
         idx = real_ratings.nonzero()
