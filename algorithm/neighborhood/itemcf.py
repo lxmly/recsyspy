@@ -95,7 +95,7 @@ class Itemcf(Estimator):
         divisor = 0
 
         for sim_i, sim, sim_r in neighbors:
-            if self.use_baseline:
+            if not self.use_baseline:
                 bias = sim_r - self.item_means[sim_i]
             else:
                 bias = sim_r - self.baseline.predict(u, sim_i)
