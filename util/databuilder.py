@@ -1,14 +1,12 @@
 # -*- coding:utf-8 -*-
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-
 import itertools
 import os
 
 import numpy as np
 from scipy.sparse import csr_matrix
 from util.matrix import Matrix
+import tools as tl
 
 
 class DataBuilder(object):
@@ -94,12 +92,13 @@ class DataBuilder(object):
 
         return Matrix(sparse_matrix, uid_dict, iid_dict)
 
-    def rmse(self, algorithm):
-        rmse_result = []
+    def eval(self, algorithm, measures=["rmse", "mae"]):
+        eval_results = []
 
         for train_dataset, test_dataset in self.cv():
             algorithm.train(train_dataset)
-            rmse_result.append(algorithm.estimate(test_dataset))
+            eval_results.append(algorithm.estimate(test_dataset, measures))
             if self.just_test_one:
                 break
-        print("avg rmse {}".format(np.mean(rmse_result)))
+
+        tl.print_pretty(measures, eval_results)
