@@ -108,14 +108,14 @@ class IterationEstimator(Estimator):
 
     def _pred(self):
         """
-        核心迭代
+        核心预测
         """
 
         raise NotImplementedError()
 
     def _eval(self):
         """
-        整体eval
+        整体指标评估
         """
 
         pred_ratings = self._pred()
