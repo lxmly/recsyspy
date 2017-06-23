@@ -3,7 +3,7 @@
 from __future__ import division, print_function
 
 import numpy as np
-from estimator import Estimator
+from algorithm.estimator import Estimator
 
 
 class SVDPlusPlus(Estimator):

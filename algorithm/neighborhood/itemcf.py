@@ -4,8 +4,7 @@ from __future__ import division, print_function
 
 import numpy as np
 from scipy.sparse import lil_matrix
-
-from algorithm.mf.estimator import Estimator
+from algorithm.estimator import Estimator
 from algorithm.mf.baseline import Baseline
 
 

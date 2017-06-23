@@ -4,8 +4,8 @@ from __future__ import division, print_function
 
 import numpy as np
 import scipy.sparse as sparse
-from algorithm.mf.estimator import IterationEstimator
 from scipy.sparse.linalg import spsolve
+from algorithm.estimator import IterationEstimator
 
 
 class ImplicitALS(IterationEstimator):
