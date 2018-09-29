@@ -14,7 +14,7 @@ from algorithm.neighborhood.slop_one import SlopOne
 from algorithm.neighborhood.itemcf import Itemcf
 
 file_name = os.path.abspath("data/ml-100k/u.data")
-data_builder = DataBuilder(file_name, k_folds=5, just_test_one=True)
+data_builder = DataBuilder(file_name, just_test_one=True)
 
 
 def test_neumf():

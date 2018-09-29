@@ -1,8 +1,5 @@
 # Recsyspy
-经典推荐算法实现
-* 基于scipy 稀疏矩阵构建数据模型
-* 算法过程模块化，易于扩展
-* 使用k折交叉验证测试算法
+Classic recommendation algorithm implementation
 
 ## Algorithm
 |DNN Model |RMSE|MAE
@@ -22,6 +19,21 @@
 |Itemcf|1.029|0.802
 |WeightedSlopOne|1.043|0.835|
 
+# Example
+```python
+import os
+
+from util.databuilder import DataBuilder
+from algorithm.dnn.neumf import NeuMF
+
+file_name = os.path.abspath("data/ml-100k/u.data")
+data_builder = DataBuilder(file_name, just_test_one=True)
+
+
+data_builder.eval(NeuMF(epochs=2), k_folds=5)
+```
+
+
 ## Dateset
 * MovieLens 
 
@@ -36,4 +48,5 @@
 
 ### Neighborhood Algorithm
 * Slope one predictors for online rating-based collaborative filtering
+
 

@@ -16,14 +16,12 @@ class DataBuilder(object):
     参数
     ----------    
     file_name : 文件地址，这里用的grouplens数据集
-    k_folds : k折交叉验证
     shuffle : 是否对数据shuffle
     just_test_one : k折交叉验证要运行k次，这里只运行一次，方便测试程序正确性
     """
 
-    def __init__(self, file_name, k_folds=7, shuffle=True, just_test_one=True):
+    def __init__(self, file_name, shuffle=True, just_test_one=False):
         self.file_name = file_name
-        self.k_folds = k_folds
         self.shuffle = shuffle
         self.just_test_one = just_test_one
 
@@ -41,7 +39,7 @@ class DataBuilder(object):
         uid, iid, r, timestamp = (line[i].strip() for i in range(4))
         return uid, iid, float(r), timestamp
 
-    def cv(self):
+    def cv(self, k_folds):
         raw_ratings = self.read_ratings()
 
         if self.shuffle:
@@ -49,9 +47,9 @@ class DataBuilder(object):
 
         stop = 0
         raw_len = len(raw_ratings)
-        offset = raw_len // self.k_folds
-        left = raw_len % self.k_folds
-        for fold_i in range(self.k_folds):
+        offset = raw_len // k_folds
+        left = raw_len % k_folds
+        for fold_i in range(k_folds):
             print("current fold {}".format(fold_i + 1))
             start = stop
             stop += offset
@@ -92,10 +90,10 @@ class DataBuilder(object):
 
         return Matrix(sparse_matrix, uid_dict, iid_dict)
 
-    def eval(self, algorithm, measures=["rmse", "mae"]):
+    def eval(self, algorithm, measures=["rmse", "mae"], k_folds=5):
         eval_results = []
 
-        for train_dataset, test_dataset in self.cv():
+        for train_dataset, test_dataset in self.cv(k_folds):
             algorithm.train(train_dataset)
             eval_results.append(algorithm.estimate(test_dataset, measures))
             if self.just_test_one:
