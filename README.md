@@ -1,5 +1,5 @@
 # Recsyspy
-Classic recommendation algorithm implementation
+Classic recommendation algorithms implementation
 
 ## Algorithm
 |DNN Model |RMSE|MAE
@@ -19,7 +19,7 @@ Classic recommendation algorithm implementation
 |Itemcf|1.029|0.802
 |WeightedSlopOne|1.043|0.835|
 
-# Example
+## Example
 ```python
 import os
 
