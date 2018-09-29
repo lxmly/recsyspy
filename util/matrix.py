@@ -61,13 +61,18 @@ class Matrix(object):
             item_means[i] = np.mean(self.get_item(i)[1])
         return item_means
 
-    def all_ratings(self):
+    def all_ratings(self, axis=1):
         """
-        iterator(u,i,r)
+        row(u,i,r)
+        or 
+        col(u, i, r)
         """
-
         coo_matrix = self.matrix.tocoo()
-        return itertools.izip(coo_matrix.row, coo_matrix.col, coo_matrix.data)
+
+        if axis == 1:
+            return itertools.izip(coo_matrix.row, coo_matrix.col, coo_matrix.data)
+        else:
+            return coo_matrix.row, coo_matrix.col, coo_matrix.data
 
     def get_uids(self):
         """

@@ -8,8 +8,7 @@ import util.measure as ms
 
 
 class Estimator(object):
-    """
-    基础算法流程
+    """Basic Estimator
     """
 
     def __init__(self):
@@ -70,7 +69,7 @@ class Estimator(object):
             est = max(1, est)
             errors.append(real - est)
 
-            self.progress(cur, all, 300)
+            self.progress(cur, all, 2000)
 
         fold_eval_result = [getattr(ms, measure)(errors) for measure in measures]
         return fold_eval_result
@@ -83,7 +82,8 @@ class Estimator(object):
 
 
 class IterationEstimator(Estimator):
-    """适合迭代式算法"""
+    """Iterator Estimator
+    """
 
     def _train(self):
         self._prepare()
@@ -94,28 +94,28 @@ class IterationEstimator(Estimator):
 
     def _prepare(self):
         """
-        准备工作
+        do some prepare work
         """
 
         raise NotImplementedError()
 
     def _iteration(self):
         """
-        核心迭代
+        core iteration 
         """
 
         raise NotImplementedError()
 
     def _pred(self):
         """
-        核心预测
+        core pred process
         """
 
         raise NotImplementedError()
 
     def _eval(self):
         """
-        整体指标评估
+        eval on valid dateset
         """
 
         pred_ratings = self._pred()

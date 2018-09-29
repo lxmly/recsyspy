@@ -6,7 +6,7 @@ import os
 import numpy as np
 from scipy.sparse import csr_matrix
 from util.matrix import Matrix
-import tools as tl
+import util.tools as tl
 
 
 class DataBuilder(object):
